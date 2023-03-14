@@ -175,6 +175,12 @@ class Config:
             cls.fallback_fonts = comma_separated_string_type(fallback_fonts)
 
 
+def open_image_or_none(image_path):
+    try:
+        return Image.open(image_path)
+    except:
+        return None
+
 class MediaInfo(object):
     """Collect information about a video file
     """
@@ -580,7 +586,10 @@ class MediaCapture(object):
     def compute_avg_color(self, image_path):
         """Computes the average color of an image
         """
-        i = Image.open(image_path)
+        i = open_image_or_none(image_path)
+        if i == None:
+            return 0
+
         i = i.convert('P')
         p = i.getcolors()
 
@@ -598,7 +607,10 @@ class MediaCapture(object):
     def compute_blurriness(self, image_path):
         """Computes the blurriness of an image. Small value means less blurry.
         """
-        i = Image.open(image_path)
+        i = open_image_or_none(image_path)
+        if i == None:
+            return 1
+
         i = i.convert('L')  # convert to grayscale
 
         a = numpy.asarray(i)
@@ -1021,7 +1033,10 @@ def compose_contact_sheet(
     w = 0
     frames = sorted(frames, key=lambda x: x.timestamp)
     for i, frame in enumerate(frames):
-        f = Image.open(frame.filename)
+        f = open_image_or_none(frame.filename)
+        if f == None:
+            f = Image.new('RGB', (desired_size[0], desired_size[1]))
+
         f.putalpha(args.capture_alpha)
         image_capture_layer.paste(f, (w, h))
 
